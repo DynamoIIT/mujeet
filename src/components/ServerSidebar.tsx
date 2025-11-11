@@ -26,6 +26,8 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
+  const [showDMs, setShowDMs] = useState(false);
+  const [activeDMFriend, setActiveDMFriend] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 

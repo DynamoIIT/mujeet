@@ -28,6 +28,7 @@ export default function ProfileSettingsModal({ open, onOpenChange, profile }: Pr
   const [username, setUsername] = useState(profile.username);
   const [bio, setBio] = useState(profile.bio || "");
   const [accentColor, setAccentColor] = useState(profile.accent_color);
+  const [lightingColor, setLightingColor] = useState((profile as any).lighting_color || profile.accent_color);
   const [isLoading, setIsLoading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
@@ -104,6 +105,7 @@ export default function ProfileSettingsModal({ open, onOpenChange, profile }: Pr
           username,
           bio: bio.trim() || null,
           accent_color: accentColor,
+          lighting_color: lightingColor,
           avatar_url: newAvatarUrl,
           banner_url: newBannerUrl,
         })
@@ -253,6 +255,29 @@ export default function ProfileSettingsModal({ open, onOpenChange, profile }: Pr
                 className="flex-1"
               />
             </div>
+          </div>
+
+          {/* Profile Lighting */}
+          <div>
+            <Label htmlFor="lighting-color">Profile Glow/Lighting</Label>
+            <div className="flex items-center gap-3 mt-2">
+              <input
+                id="lighting-color"
+                type="color"
+                value={lightingColor}
+                onChange={(e) => setLightingColor(e.target.value)}
+                className="h-10 w-20 rounded cursor-pointer"
+              />
+              <Input
+                value={lightingColor}
+                onChange={(e) => setLightingColor(e.target.value)}
+                maxLength={7}
+                className="flex-1"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Custom glow effect for your profile card
+            </p>
           </div>
 
           {/* Action Buttons */}

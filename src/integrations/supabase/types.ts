@@ -46,6 +46,72 @@ export type Database = {
           },
         ]
       }
+      dm_channels: {
+        Row: {
+          created_at: string | null
+          id: string
+          user_id_1: string
+          user_id_2: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          user_id_1: string
+          user_id_2: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          user_id_1?: string
+          user_id_2?: string
+        }
+        Relationships: []
+      }
+      friend_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          receiver_id: string
+          sender_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          receiver_id: string
+          sender_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          created_at: string | null
+          id: string
+          user_id_1: string
+          user_id_2: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          user_id_1: string
+          user_id_2: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          user_id_1?: string
+          user_id_2?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           channel_id: string
@@ -68,15 +134,7 @@ export type Database = {
           id?: string
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "messages_channel_id_fkey"
-            columns: ["channel_id"]
-            isOneToOne: false
-            referencedRelation: "channels"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -87,6 +145,7 @@ export type Database = {
           bio: string | null
           created_at: string | null
           id: string
+          lighting_color: string | null
           status: string | null
           updated_at: string | null
           username: string
@@ -99,6 +158,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           id: string
+          lighting_color?: string | null
           status?: string | null
           updated_at?: string | null
           username: string
@@ -111,6 +171,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           id?: string
+          lighting_color?: string | null
           status?: string | null
           updated_at?: string | null
           username?: string

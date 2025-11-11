@@ -41,10 +41,12 @@ export default function UserProfileModal({ profile, open, onOpenChange, isOwnPro
     offline: 'bg-status-offline'
   }[profile.status] || 'bg-status-offline';
 
+  const lightingColor = (profile as any).lighting_color || profile.accent_color;
+
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl p-0 overflow-hidden">
+        <DialogContent className="max-w-2xl p-0 overflow-hidden glass-strong">
           {/* Banner */}
           <div 
             className="h-32 bg-cover bg-center relative"
@@ -65,15 +67,23 @@ export default function UserProfileModal({ profile, open, onOpenChange, isOwnPro
 
           {/* Profile Content */}
           <div className="px-6 pb-6 -mt-16">
-            {/* Avatar */}
+            {/* Avatar with Glow */}
             <div className="relative inline-block">
-              <Avatar className="h-28 w-28 border-8 border-card">
+              <div 
+                className="absolute inset-0 rounded-full blur-2xl opacity-60"
+                style={{ 
+                  background: `radial-gradient(circle, ${lightingColor}, transparent)`,
+                  transform: 'scale(1.2)',
+                  zIndex: 0
+                }}
+              />
+              <Avatar className="h-28 w-28 border-8 border-card relative z-10">
                 <AvatarImage src={profile.avatar_url || undefined} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-3xl">
                   {profile.username.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <div className={`absolute bottom-2 right-2 h-6 w-6 rounded-full ${statusColor} border-4 border-card`} />
+              <div className={`absolute bottom-2 right-2 h-6 w-6 rounded-full ${statusColor} border-4 border-card z-10`} />
             </div>
 
             {/* Username and Badges */}
