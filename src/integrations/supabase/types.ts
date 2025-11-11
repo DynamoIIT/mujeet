@@ -80,7 +80,11 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accent_color: string | null
           avatar_url: string | null
+          badges: string[] | null
+          banner_url: string | null
+          bio: string | null
           created_at: string | null
           id: string
           status: string | null
@@ -88,7 +92,11 @@ export type Database = {
           username: string
         }
         Insert: {
+          accent_color?: string | null
           avatar_url?: string | null
+          badges?: string[] | null
+          banner_url?: string | null
+          bio?: string | null
           created_at?: string | null
           id: string
           status?: string | null
@@ -96,7 +104,11 @@ export type Database = {
           username: string
         }
         Update: {
+          accent_color?: string | null
           avatar_url?: string | null
+          badges?: string[] | null
+          banner_url?: string | null
+          bio?: string | null
           created_at?: string | null
           id?: string
           status?: string | null

@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Plus, Hash, LogOut } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Plus, Hash, LogOut, User } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import CreateServerDialog from "./CreateServerDialog";
+import UserProfileModal from "./UserProfileModal";
 import { useNavigate } from "react-router-dom";
 
 interface Server {
@@ -22,11 +24,14 @@ interface ServerSidebarProps {
 export default function ServerSidebar({ userId, selectedServerId, onSelectServer }: ServerSidebarProps) {
   const [servers, setServers] = useState<Server[]>([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchServers();
+    fetchUserProfile();
 
     const channel = supabase
       .channel('servers-changes')
@@ -65,6 +70,21 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
       }
     } catch (error) {
       console.error('Error fetching servers:', error);
+    }
+  };
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+
+      if (error) throw error;
+      setUserProfile(data);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
     }
   };
 
@@ -119,6 +139,20 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
           >
             <Plus className="h-6 w-6" />
           </Button>
+
+          {/* User Profile Button */}
+          <button
+            onClick={() => setProfileOpen(true)}
+            className="w-12 h-12 rounded-2xl hover:rounded-xl transition-all relative group"
+          >
+            <Avatar className="w-full h-full">
+              <AvatarImage src={userProfile?.avatar_url || undefined} />
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {userProfile?.username?.charAt(0).toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute bottom-0 right-0 h-4 w-4 bg-status-online rounded-full border-2 border-sidebar" />
+          </button>
           
           <Button
             variant="ghost"
@@ -136,6 +170,13 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
         onOpenChange={setIsCreateOpen}
         userId={userId}
         onServerCreated={(serverId) => onSelectServer(serverId)}
+      />
+
+      <UserProfileModal
+        profile={userProfile}
+        open={profileOpen}
+        onOpenChange={setProfileOpen}
+        isOwnProfile={true}
       />
     </>
   );
