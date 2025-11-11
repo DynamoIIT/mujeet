@@ -57,6 +57,18 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        chat: {
+          bg: "hsl(var(--chat-bg))",
+          message: "hsl(var(--message-bg))",
+          "message-hover": "hsl(var(--message-hover))",
+          "server-hover": "hsl(var(--server-hover))",
+        },
+        status: {
+          online: "hsl(var(--online))",
+          away: "hsl(var(--away))",
+          busy: "hsl(var(--busy))",
+          offline: "hsl(var(--offline))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
