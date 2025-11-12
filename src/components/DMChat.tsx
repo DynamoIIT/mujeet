@@ -10,7 +10,7 @@ interface Message {
   content: string;
   user_id: string;
   created_at: string;
-  profiles?: {
+  profiles: {
     username: string;
     avatar_url: string | null;
   };
@@ -103,12 +103,14 @@ export default function DMChat({ friendId, onBack }: DMChatProps) {
         .select('id, username, avatar_url')
         .in('id', userIds);
 
-      const messagesWithProfiles = data.map(msg => ({
-        ...msg,
-        profiles: profiles?.find(p => p.id === msg.user_id)
-      }));
+      const messagesWithProfiles = data
+        .map(msg => ({
+          ...msg,
+          profiles: profiles?.find(p => p.id === msg.user_id)
+        }))
+        .filter(msg => msg.profiles) as Message[];
 
-      setMessages(messagesWithProfiles as Message[]);
+      setMessages(messagesWithProfiles);
     }
   };
 
@@ -132,10 +134,12 @@ export default function DMChat({ friendId, onBack }: DMChatProps) {
             .eq('id', payload.new.user_id)
             .single();
 
-          setMessages((prev) => [
-            ...prev,
-            { ...payload.new, profiles: profile } as Message,
-          ]);
+          if (profile) {
+            setMessages((prev) => [
+              ...prev,
+              { ...payload.new, profiles: profile } as Message,
+            ]);
+          }
         }
       )
       .subscribe();
@@ -192,7 +196,7 @@ export default function DMChat({ friendId, onBack }: DMChatProps) {
             <MessageBubble
               key={message.id}
               message={message}
-              isOwn={message.user_id === currentUserId}
+              isOwnMessage={message.user_id === currentUserId}
             />
           ))}
         </div>
