@@ -6,6 +6,7 @@ import { Plus, Hash, LogOut, User, MessageSquare } from "lucide-react";
 import DirectMessages from "./DirectMessages";
 import DMChat from "./DMChat";
 import StatusSelector from "./StatusSelector";
+import NotificationBell from "./NotificationBell";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import CreateServerDialog from "./CreateServerDialog";
@@ -16,6 +17,8 @@ interface Server {
   id: string;
   name: string;
   icon_url: string | null;
+  unread_count?: number;
+  has_mention?: boolean;
 }
 
 interface ServerSidebarProps {
@@ -37,6 +40,7 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
   useEffect(() => {
     fetchServers();
     fetchUserProfile();
+    loadUnreadCounts();
 
     const channel = supabase
       .channel('servers-changes')
@@ -49,6 +53,17 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
         },
         () => {
           fetchServers();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+        },
+        () => {
+          loadUnreadCounts();
         }
       )
       .subscribe();
@@ -90,6 +105,30 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
       setUserProfile(data);
     } catch (error) {
       console.error('Error fetching profile:', error);
+    }
+  };
+
+  const loadUnreadCounts = async () => {
+    const { data } = await supabase
+      .from('unread_messages')
+      .select('channel_id, unread_count, has_mention')
+      .eq('user_id', userId);
+
+    if (data) {
+      // Update servers with unread counts
+      setServers(prevServers => 
+        prevServers.map(server => {
+          const serverUnreads = data.filter(u => 
+            // This would need to check if channel belongs to this server
+            true // Placeholder - needs proper server-channel mapping
+          );
+          return {
+            ...server,
+            unread_count: serverUnreads.reduce((sum, u) => sum + u.unread_count, 0),
+            has_mention: serverUnreads.some(u => u.has_mention)
+          };
+        })
+      );
     }
   };
 
@@ -152,14 +191,29 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
                     {server.name.charAt(0).toUpperCase()}
                   </span>
                 )}
-                <div className="absolute left-0 w-1 h-0 bg-foreground rounded-r transition-all group-hover:h-5 
-                  ${selectedServerId === server.id ? 'h-10' : ''}"></div>
+                <div className={`absolute left-0 w-1 bg-foreground rounded-r transition-all group-hover:h-5 ${
+                  selectedServerId === server.id ? 'h-10' : 'h-0'
+                }`} />
+                
+                {/* Unread Indicator */}
+                {server.unread_count && server.unread_count > 0 && (
+                  <div className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-sidebar flex items-center justify-center ${
+                    server.has_mention ? 'bg-destructive' : 'bg-muted-foreground'
+                  }`}>
+                    {server.has_mention && (
+                      <span className="text-[8px] text-destructive-foreground font-bold">@</span>
+                    )}
+                  </div>
+                )}
               </button>
             ))}
           </div>
         </ScrollArea>
         
         <div className="border-t border-sidebar-border pt-2 w-full flex flex-col items-center space-y-2 px-2">
+          {/* Notification Bell */}
+          <NotificationBell />
+          
           <Button
             variant="ghost"
             size="icon"

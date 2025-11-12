@@ -4,6 +4,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Hash } from "lucide-react";
 import MessageInput from "./MessageInput";
 import MessageBubble from "./MessageBubble";
+import { useMentions } from "@/hooks/useMentions";
 
 interface Message {
   id: string;
@@ -14,6 +15,7 @@ interface Message {
     username: string;
     avatar_url: string | null;
   };
+  has_mention?: boolean;
 }
 
 interface Channel {
@@ -29,7 +31,23 @@ interface ChatAreaProps {
 export default function ChatArea({ channelId, userId }: ChatAreaProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [channel, setChannel] = useState<Channel | null>(null);
+  const [currentUsername, setCurrentUsername] = useState<string>("");
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { createMentions } = useMentions();
+
+  useEffect(() => {
+    loadCurrentUsername();
+  }, [userId]);
+
+  const loadCurrentUsername = async () => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', userId)
+      .single();
+    
+    if (data) setCurrentUsername(data.username);
+  };
 
   useEffect(() => {
     if (!channelId) return;
@@ -137,15 +155,22 @@ export default function ChatArea({ channelId, userId }: ChatAreaProps) {
     if (!channelId || !content.trim()) return;
 
     try {
-      const { error } = await supabase
+      const { data: newMessage, error } = await supabase
         .from('messages')
         .insert({
           channel_id: channelId,
           user_id: userId,
           content: content.trim(),
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // Create mentions if any
+      if (newMessage) {
+        await createMentions(newMessage.id, channelId, content);
+      }
     } catch (error) {
       console.error('Error sending message:', error);
     }
@@ -171,13 +196,20 @@ export default function ChatArea({ channelId, userId }: ChatAreaProps) {
 
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>
         <div className="space-y-4">
-          {messages.map((message) => (
-            <MessageBubble
-              key={message.id}
-              message={message}
-              isOwnMessage={message.user_id === userId}
-            />
-          ))}
+          {messages.map((message) => {
+            const isMentioned = message.content.includes(`@${currentUsername}`);
+            return (
+              <div
+                key={message.id}
+                className={isMentioned ? 'bg-destructive/10 border-l-4 border-destructive rounded-lg -ml-2 pl-2' : ''}
+              >
+                <MessageBubble
+                  message={message}
+                  isOwnMessage={message.user_id === userId}
+                />
+              </div>
+            );
+          })}
         </div>
       </ScrollArea>
 

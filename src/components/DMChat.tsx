@@ -4,6 +4,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import MessageInput from "./MessageInput";
 import MessageBubble from "./MessageBubble";
+import TypingIndicator from "./TypingIndicator";
+import { useMentions } from "@/hooks/useMentions";
 
 interface Message {
   id: string;
@@ -25,8 +27,12 @@ export default function DMChat({ friendId, onBack }: DMChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [dmChannelId, setDmChannelId] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string>("");
+  const [currentUsername, setCurrentUsername] = useState<string>("");
   const [friend, setFriend] = useState<any>(null);
+  const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const { createMentions } = useMentions();
 
   useEffect(() => {
     loadCurrentUser();
@@ -38,12 +44,57 @@ export default function DMChat({ friendId, onBack }: DMChatProps) {
     if (dmChannelId) {
       loadMessages();
       subscribeToMessages();
+      subscribeToTyping();
     }
   }, [dmChannelId]);
 
+  const subscribeToTyping = () => {
+    if (!dmChannelId) return;
+
+    const channel = supabase.channel(`typing:${dmChannelId}`);
+    
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState();
+        const typingUsers = Object.values(state).flat();
+        setIsTyping(typingUsers.some((u: any) => u.user_id !== currentUserId));
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
+
+  const handleTyping = async () => {
+    if (!dmChannelId) return;
+    
+    const channel = supabase.channel(`typing:${dmChannelId}`);
+    await channel.track({ user_id: currentUserId, typing: true });
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(async () => {
+      await channel.untrack();
+    }, 3000);
+  };
+
   const loadCurrentUser = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (user) setCurrentUserId(user.id);
+    if (user) {
+      setCurrentUserId(user.id);
+      
+      // Load current user's profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', user.id)
+        .single();
+      
+      if (profile) setCurrentUsername(profile.username);
+    }
   };
 
   const loadFriend = async () => {
@@ -152,11 +203,20 @@ export default function DMChat({ friendId, onBack }: DMChatProps) {
   const handleSendMessage = async (content: string) => {
     if (!dmChannelId || !content.trim()) return;
 
-    await supabase.from('messages').insert({
-      channel_id: dmChannelId,
-      content: content.trim(),
-      user_id: currentUserId,
-    });
+    const { data: newMessage } = await supabase
+      .from('messages')
+      .insert({
+        channel_id: dmChannelId,
+        content: content.trim(),
+        user_id: currentUserId,
+      })
+      .select()
+      .single();
+
+    // Create mentions if any
+    if (newMessage) {
+      await createMentions(newMessage.id, dmChannelId, content);
+    }
   };
 
   const statusColor = (status: string) => ({
@@ -192,18 +252,29 @@ export default function DMChat({ friendId, onBack }: DMChatProps) {
       {/* Messages */}
       <ScrollArea className="flex-1 p-4">
         <div ref={scrollRef} className="space-y-4">
-          {messages.map((message) => (
-            <MessageBubble
-              key={message.id}
-              message={message}
-              isOwnMessage={message.user_id === currentUserId}
-            />
-          ))}
+          {messages.map((message) => {
+            const isMentioned = message.content.includes(`@${currentUsername}`);
+            return (
+              <div
+                key={message.id}
+                className={isMentioned ? 'bg-destructive/10 border-l-4 border-destructive rounded-lg -ml-2 pl-2' : ''}
+              >
+                <MessageBubble
+                  message={message}
+                  isOwnMessage={message.user_id === currentUserId}
+                />
+              </div>
+            );
+          })}
+          {isTyping && <TypingIndicator username={friend.username} />}
         </div>
       </ScrollArea>
 
       {/* Message Input */}
-      <MessageInput onSendMessage={handleSendMessage} />
+      <MessageInput 
+        onSendMessage={handleSendMessage} 
+        onTyping={handleTyping}
+      />
     </div>
   );
 }

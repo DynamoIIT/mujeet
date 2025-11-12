@@ -112,6 +112,30 @@ export type Database = {
         }
         Relationships: []
       }
+      mentions: {
+        Row: {
+          channel_id: string
+          created_at: string
+          id: string
+          mentioned_user_id: string
+          message_id: string
+        }
+        Insert: {
+          channel_id: string
+          created_at?: string
+          id?: string
+          mentioned_user_id: string
+          message_id: string
+        }
+        Update: {
+          channel_id?: string
+          created_at?: string
+          id?: string
+          mentioned_user_id?: string
+          message_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           channel_id: string
@@ -225,6 +249,33 @@ export type Database = {
           id?: string
           name?: string
           owner_id?: string
+        }
+        Relationships: []
+      }
+      unread_messages: {
+        Row: {
+          channel_id: string
+          has_mention: boolean
+          id: string
+          last_read_at: string
+          unread_count: number
+          user_id: string
+        }
+        Insert: {
+          channel_id: string
+          has_mention?: boolean
+          id?: string
+          last_read_at?: string
+          unread_count?: number
+          user_id: string
+        }
+        Update: {
+          channel_id?: string
+          has_mention?: boolean
+          id?: string
+          last_read_at?: string
+          unread_count?: number
+          user_id?: string
         }
         Relationships: []
       }

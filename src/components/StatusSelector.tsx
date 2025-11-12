@@ -55,10 +55,10 @@ export default function StatusSelector({ currentStatus, onStatusChange }: Status
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="gap-2">
-          <div className={`h-3 w-3 rounded-full ${currentStatusData.color}`} />
-          <span className="text-sm">{currentStatusData.label}</span>
-        </Button>
+        <div 
+          className={`absolute bottom-0 right-0 h-4 w-4 rounded-full ${currentStatusData.color} border-2 border-sidebar cursor-pointer hover:scale-110 transition-transform`}
+          onClick={(e) => e.stopPropagation()}
+        />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="glass">
         {statuses.map((status) => (

@@ -130,7 +130,15 @@ export default function DirectMessages({ onOpenDM }: DirectMessagesProps) {
       .neq('id', currentUserId)
       .limit(10);
 
-    if (data) setSearchResults(data);
+    setSearchResults(data || []);
+    
+    if (!data || data.length === 0) {
+      toast({
+        title: "No user found",
+        description: "User doesn't exist or you can't add yourself.",
+        variant: "destructive",
+      });
+    }
   };
 
   const sendFriendRequest = async (receiverId: string) => {

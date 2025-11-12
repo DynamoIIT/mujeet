@@ -5,9 +5,10 @@ import { Send } from "lucide-react";
 
 interface MessageInputProps {
   onSendMessage: (content: string) => void;
+  onTyping?: () => void;
 }
 
-export default function MessageInput({ onSendMessage }: MessageInputProps) {
+export default function MessageInput({ onSendMessage, onTyping }: MessageInputProps) {
   const [message, setMessage] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -23,7 +24,10 @@ export default function MessageInput({ onSendMessage }: MessageInputProps) {
       <form onSubmit={handleSubmit} className="flex items-center space-x-2">
         <Input
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
+          onChange={(e) => {
+            setMessage(e.target.value);
+            onTyping?.();
+          }}
           placeholder="Type a message..."
           className="flex-1 bg-chat-message"
         />
