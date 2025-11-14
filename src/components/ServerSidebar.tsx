@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Hash, LogOut, User, MessageSquare } from "lucide-react";
+import { Plus, Hash, LogOut, User, MessageSquare, Settings } from "lucide-react";
 import DirectMessages from "./DirectMessages";
 import DMChat from "./DMChat";
 import StatusSelector from "./StatusSelector";
@@ -11,12 +11,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import CreateServerDialog from "./CreateServerDialog";
 import UserProfileModal from "./UserProfileModal";
+import { ServerSettingsModal } from "./ServerSettingsModal";
 import { useNavigate } from "react-router-dom";
 
 interface Server {
   id: string;
   name: string;
   icon_url: string | null;
+  banner_url: string | null;
+  owner_id: string;
   unread_count?: number;
   has_mention?: boolean;
 }
@@ -34,6 +37,8 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
   const [userProfile, setUserProfile] = useState<any>(null);
   const [showDMs, setShowDMs] = useState(false);
   const [activeDMFriend, setActiveDMFriend] = useState<string | null>(null);
+  const [showServerSettings, setShowServerSettings] = useState(false);
+  const [selectedServerForSettings, setSelectedServerForSettings] = useState<Server | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -171,41 +176,54 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
             <div className="w-8 h-px bg-sidebar-border my-1" />
             
             {servers.map((server) => (
-              <button
-                key={server.id}
-                onClick={() => {
-                  setShowDMs(false);
-                  setActiveDMFriend(null);
-                  onSelectServer(server.id);
-                }}
-                className={`group relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all hover:rounded-xl ${
-                  selectedServerId === server.id
-                    ? 'bg-primary rounded-xl'
-                    : 'bg-secondary hover:bg-chat-server-hover'
-                }`}
-              >
-                {server.icon_url ? (
-                  <img src={server.icon_url} alt={server.name} className="w-full h-full rounded-inherit" />
-                ) : (
-                  <span className="text-foreground font-semibold text-lg">
-                    {server.name.charAt(0).toUpperCase()}
-                  </span>
+              <div key={server.id} className="relative group">
+                <button
+                  onClick={() => {
+                    setShowDMs(false);
+                    setActiveDMFriend(null);
+                    onSelectServer(server.id);
+                  }}
+                  className={`group relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all hover:rounded-xl ${
+                    selectedServerId === server.id
+                      ? 'bg-primary rounded-xl'
+                      : 'bg-secondary hover:bg-chat-server-hover'
+                  }`}
+                >
+                  {server.icon_url ? (
+                    <img src={server.icon_url} alt={server.name} className="w-full h-full rounded-inherit" />
+                  ) : (
+                    <span className="text-foreground font-semibold text-lg">
+                      {server.name.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                  <div className={`absolute left-0 w-1 bg-foreground rounded-r transition-all group-hover:h-5 ${
+                    selectedServerId === server.id ? 'h-10' : 'h-0'
+                  }`} />
+                  
+                  {/* Unread Indicator */}
+                  {server.unread_count && server.unread_count > 0 && (
+                    <div className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-sidebar flex items-center justify-center ${
+                      server.has_mention ? 'bg-destructive' : 'bg-muted-foreground'
+                    }`}>
+                      {server.has_mention && (
+                        <span className="text-[8px] text-destructive-foreground font-bold">@</span>
+                      )}
+                    </div>
+                  )}
+                </button>
+                {server.owner_id === userId && (
+                  <button
+                    onClick={() => {
+                      setSelectedServerForSettings(server);
+                      setShowServerSettings(true);
+                    }}
+                    className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-secondary border-2 border-sidebar flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Server Settings"
+                  >
+                    <Settings className="w-3 h-3" />
+                  </button>
                 )}
-                <div className={`absolute left-0 w-1 bg-foreground rounded-r transition-all group-hover:h-5 ${
-                  selectedServerId === server.id ? 'h-10' : 'h-0'
-                }`} />
-                
-                {/* Unread Indicator */}
-                {server.unread_count && server.unread_count > 0 && (
-                  <div className={`absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-sidebar flex items-center justify-center ${
-                    server.has_mention ? 'bg-destructive' : 'bg-muted-foreground'
-                  }`}>
-                    {server.has_mention && (
-                      <span className="text-[8px] text-destructive-foreground font-bold">@</span>
-                    )}
-                  </div>
-                )}
-              </button>
+              </div>
             ))}
           </div>
         </ScrollArea>
@@ -264,6 +282,20 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
         onOpenChange={setProfileOpen}
         isOwnProfile={true}
       />
+
+      {selectedServerForSettings && (
+        <ServerSettingsModal
+          isOpen={showServerSettings}
+          onClose={() => {
+            setShowServerSettings(false);
+            setSelectedServerForSettings(null);
+          }}
+          server={selectedServerForSettings}
+          onUpdate={() => {
+            fetchServers();
+          }}
+        />
+      )}
 
       {/* DM Interface */}
       {showDMs && !activeDMFriend && (
