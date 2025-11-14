@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Plus, Hash, LogOut, User, MessageSquare, Settings } from "lucide-react";
+import { Plus, Hash, LogOut, User, MessageSquare, Settings, Search } from "lucide-react";
 import DirectMessages from "./DirectMessages";
 import DMChat from "./DMChat";
 import StatusSelector from "./StatusSelector";
@@ -10,6 +10,7 @@ import NotificationBell from "./NotificationBell";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import CreateServerDialog from "./CreateServerDialog";
+import ServerSearchDialog from "./ServerSearchDialog";
 import UserProfileModal from "./UserProfileModal";
 import { ServerSettingsModal } from "./ServerSettingsModal";
 import { useNavigate } from "react-router-dom";
@@ -33,6 +34,7 @@ interface ServerSidebarProps {
 export default function ServerSidebar({ userId, selectedServerId, onSelectServer }: ServerSidebarProps) {
   const [servers, setServers] = useState<Server[]>([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [userProfile, setUserProfile] = useState<any>(null);
   const [showDMs, setShowDMs] = useState(false);
@@ -235,6 +237,16 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
           <Button
             variant="ghost"
             size="icon"
+            onClick={() => setIsSearchOpen(true)}
+            className="w-12 h-12 rounded-2xl hover:rounded-xl hover:bg-secondary transition-all"
+            title="Search Servers"
+          >
+            <Search className="h-6 w-6" />
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setIsCreateOpen(true)}
             className="w-12 h-12 rounded-2xl hover:rounded-xl hover:bg-primary transition-all"
           >
@@ -274,6 +286,16 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
         onOpenChange={setIsCreateOpen}
         userId={userId}
         onServerCreated={(serverId) => onSelectServer(serverId)}
+      />
+
+      <ServerSearchDialog
+        open={isSearchOpen}
+        onOpenChange={setIsSearchOpen}
+        userId={userId}
+        onServerJoined={(serverId) => {
+          fetchServers();
+          onSelectServer(serverId);
+        }}
       />
 
       <UserProfileModal

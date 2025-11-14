@@ -230,6 +230,7 @@ export type Database = {
       }
       servers: {
         Row: {
+          banner_url: string | null
           created_at: string | null
           icon_url: string | null
           id: string
@@ -237,6 +238,7 @@ export type Database = {
           owner_id: string
         }
         Insert: {
+          banner_url?: string | null
           created_at?: string | null
           icon_url?: string | null
           id?: string
@@ -244,6 +246,7 @@ export type Database = {
           owner_id: string
         }
         Update: {
+          banner_url?: string | null
           created_at?: string | null
           icon_url?: string | null
           id?: string
