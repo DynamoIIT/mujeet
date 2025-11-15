@@ -45,7 +45,9 @@ export function ServerSettingsModal({ isOpen, onClose, server, onUpdate }: Serve
   };
 
   const uploadFile = async (file: File, bucket: string, path: string) => {
-    const { data, error } = await supabase.storage.from(bucket).upload(path, file, {
+    const fullPath = `${path}.${file.name.split('.').pop()}`;
+    const { data, error } = await supabase.storage.from(bucket).upload(fullPath, file, {
+      cacheControl: '3600',
       upsert: true,
     });
     if (error) throw error;

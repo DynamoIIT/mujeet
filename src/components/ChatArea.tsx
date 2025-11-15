@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Hash } from "lucide-react";
+import { Hash, ChevronLeft } from "lucide-react";
 import MessageInput from "./MessageInput";
 import MessageBubble from "./MessageBubble";
 import { useMentions } from "@/hooks/useMentions";
+import { Button } from "@/components/ui/button";
 
 interface Message {
   id: string;
@@ -26,9 +27,10 @@ interface Channel {
 interface ChatAreaProps {
   channelId: string | null;
   userId: string;
+  onBack?: () => void;
 }
 
-export default function ChatArea({ channelId, userId }: ChatAreaProps) {
+export default function ChatArea({ channelId, userId, onBack }: ChatAreaProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [channel, setChannel] = useState<Channel | null>(null);
   const [currentUsername, setCurrentUsername] = useState<string>("");
@@ -189,15 +191,25 @@ export default function ChatArea({ channelId, userId }: ChatAreaProps) {
 
   return (
     <div className="flex-1 flex flex-col bg-chat-bg">
-      <div className="h-12 px-4 flex items-center border-b border-border shadow-sm bg-card">
-        <Hash className="h-5 w-5 text-muted-foreground mr-2" />
-        <span className="font-semibold">{channel?.name || 'Channel'}</span>
+      <div className="h-12 px-2 md:px-4 flex items-center gap-2 border-b border-border shadow-sm bg-card">
+        {onBack && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            className="md:hidden"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+        )}
+        <Hash className="h-5 w-5 text-muted-foreground" />
+        <span className="font-semibold truncate">{channel?.name || 'Channel'}</span>
       </div>
 
-      <ScrollArea className="flex-1 p-4" ref={scrollRef}>
+      <ScrollArea className="flex-1 p-2 md:p-4" ref={scrollRef}>
         <div className="space-y-4">
           {messages.map((message) => {
-            const isMentioned = message.content.includes(`@${currentUsername}`);
+            const isMentioned = message.content.includes(`@${currentUsername}`) || message.content.includes('@everyone');
             return (
               <div
                 key={message.id}

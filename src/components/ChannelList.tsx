@@ -101,7 +101,7 @@ export default function ChannelList({ serverId, selectedChannelId, onSelectChann
 
   if (!serverId) {
     return (
-      <div className="w-60 bg-card flex items-center justify-center border-r border-border">
+      <div className="w-48 md:w-60 bg-card flex items-center justify-center border-r border-border">
         <p className="text-muted-foreground text-sm">Select a server</p>
       </div>
     );
@@ -109,7 +109,7 @@ export default function ChannelList({ serverId, selectedChannelId, onSelectChann
 
   return (
     <>
-      <div className="w-60 bg-card flex flex-col border-r border-border">
+      <div className="w-48 md:w-60 bg-card flex flex-col border-r border-border">
         <div className="h-12 px-4 flex items-center border-b border-border shadow-sm">
           <button className="flex items-center justify-between w-full hover:bg-secondary px-2 py-1 rounded transition-colors">
             <span className="font-semibold text-sm truncate">{server?.name || 'Server'}</span>

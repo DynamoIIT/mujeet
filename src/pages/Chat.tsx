@@ -11,6 +11,7 @@ export default function Chat() {
   const [user, setUser] = useState<User | null>(null);
   const [selectedServerId, setSelectedServerId] = useState<string | null>(null);
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null);
+  const [showChannels, setShowChannels] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -56,6 +57,14 @@ export default function Chat() {
     }
   };
 
+  const handleSelectChannel = (channelId: string) => {
+    setSelectedChannelId(channelId);
+    // Hide channels on mobile when a channel is selected
+    if (window.innerWidth < 768) {
+      setShowChannels(false);
+    }
+  };
+
   if (!user) {
     return null;
   }
@@ -65,16 +74,23 @@ export default function Chat() {
       <ServerSidebar 
         userId={user.id} 
         selectedServerId={selectedServerId}
-        onSelectServer={setSelectedServerId}
+        onSelectServer={(serverId) => {
+          setSelectedServerId(serverId);
+          setShowChannels(true);
+          setSelectedChannelId(null);
+        }}
       />
-      <ChannelList 
-        serverId={selectedServerId}
-        selectedChannelId={selectedChannelId}
-        onSelectChannel={setSelectedChannelId}
-      />
+      {selectedServerId && showChannels && (
+        <ChannelList 
+          serverId={selectedServerId}
+          selectedChannelId={selectedChannelId}
+          onSelectChannel={handleSelectChannel}
+        />
+      )}
       <ChatArea 
         channelId={selectedChannelId}
         userId={user.id}
+        onBack={() => setShowChannels(true)}
       />
     </div>
   );
