@@ -170,7 +170,7 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
 
   return (
     <>
-      <div className="w-16 md:w-18 bg-sidebar flex flex-col items-center py-3 space-y-2 border-r border-sidebar-border">
+      <div className="w-full md:w-18 bg-sidebar flex flex-col items-center py-3 space-y-2 border-r border-sidebar-border">
         <ScrollArea className="flex-1 w-full">
           <div className="flex flex-col items-center space-y-2 px-2">
             {/* DM Button */}

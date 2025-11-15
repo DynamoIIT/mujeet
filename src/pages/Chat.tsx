@@ -11,7 +11,7 @@ export default function Chat() {
   const [user, setUser] = useState<User | null>(null);
   const [selectedServerId, setSelectedServerId] = useState<string | null>(null);
   const [selectedChannelId, setSelectedChannelId] = useState<string | null>(null);
-  const [showChannels, setShowChannels] = useState(true);
+  const [mobileView, setMobileView] = useState<'servers' | 'channels' | 'chat'>('servers');
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -59,10 +59,7 @@ export default function Chat() {
 
   const handleSelectChannel = (channelId: string) => {
     setSelectedChannelId(channelId);
-    // Hide channels on mobile when a channel is selected
-    if (window.innerWidth < 768) {
-      setShowChannels(false);
-    }
+    setMobileView('chat');
   };
 
   if (!user) {
@@ -71,27 +68,39 @@ export default function Chat() {
 
   return (
     <div className="flex h-screen w-full bg-background overflow-hidden">
-      <ServerSidebar 
-        userId={user.id} 
-        selectedServerId={selectedServerId}
-        onSelectServer={(serverId) => {
-          setSelectedServerId(serverId);
-          setShowChannels(true);
-          setSelectedChannelId(null);
-        }}
-      />
-      {selectedServerId && showChannels && (
-        <ChannelList 
-          serverId={selectedServerId}
-          selectedChannelId={selectedChannelId}
-          onSelectChannel={handleSelectChannel}
+      {/* Server Sidebar - hidden on mobile when not in servers view */}
+      <div className={`${mobileView !== 'servers' ? 'hidden md:flex' : 'flex'} flex-shrink-0`}>
+        <ServerSidebar 
+          userId={user.id} 
+          selectedServerId={selectedServerId}
+          onSelectServer={(serverId) => {
+            setSelectedServerId(serverId);
+            setSelectedChannelId(null);
+            setMobileView('channels');
+          }}
         />
+      </div>
+
+      {/* Channel List - hidden on mobile when not in channels view */}
+      {selectedServerId && (
+        <div className={`${mobileView !== 'channels' ? 'hidden md:flex' : 'flex'} flex-shrink-0`}>
+          <ChannelList 
+            serverId={selectedServerId}
+            selectedChannelId={selectedChannelId}
+            onSelectChannel={handleSelectChannel}
+            onBack={() => setMobileView('servers')}
+          />
+        </div>
       )}
-      <ChatArea 
-        channelId={selectedChannelId}
-        userId={user.id}
-        onBack={() => setShowChannels(true)}
-      />
+
+      {/* Chat Area - hidden on mobile when not in chat view */}
+      <div className={`${mobileView !== 'chat' ? 'hidden md:flex' : 'flex'} flex-1`}>
+        <ChatArea 
+          channelId={selectedChannelId}
+          userId={user.id}
+          onBack={() => setMobileView('channels')}
+        />
+      </div>
     </div>
   );
 }
