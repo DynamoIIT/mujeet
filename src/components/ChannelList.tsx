@@ -20,9 +20,10 @@ interface ChannelListProps {
   serverId: string | null;
   selectedChannelId: string | null;
   onSelectChannel: (channelId: string) => void;
+  onBack?: () => void;
 }
 
-export default function ChannelList({ serverId, selectedChannelId, onSelectChannel }: ChannelListProps) {
+export default function ChannelList({ serverId, selectedChannelId, onSelectChannel, onBack }: ChannelListProps) {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [server, setServer] = useState<Server | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -109,8 +110,18 @@ export default function ChannelList({ serverId, selectedChannelId, onSelectChann
 
   return (
     <>
-      <div className="w-48 md:w-60 bg-card flex flex-col border-r border-border">
+      <div className="w-full md:w-60 bg-card flex flex-col border-r border-border">
         <div className="h-12 px-4 flex items-center border-b border-border shadow-sm">
+          {onBack && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onBack}
+              className="md:hidden mr-2 h-8 w-8 p-0"
+            >
+              <ChevronDown className="h-4 w-4 rotate-90" />
+            </Button>
+          )}
           <button className="flex items-center justify-between w-full hover:bg-secondary px-2 py-1 rounded transition-colors">
             <span className="font-semibold text-sm truncate">{server?.name || 'Server'}</span>
             <ChevronDown className="h-4 w-4 ml-2 flex-shrink-0" />
