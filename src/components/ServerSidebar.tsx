@@ -82,9 +82,25 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
 
   const fetchServers = async () => {
     try {
+      // Fetch servers where user is a member
+      const { data: memberData, error: memberError } = await supabase
+        .from('server_members')
+        .select('server_id')
+        .eq('user_id', userId);
+
+      if (memberError) throw memberError;
+
+      if (!memberData || memberData.length === 0) {
+        setServers([]);
+        return;
+      }
+
+      const serverIds = memberData.map(m => m.server_id);
+
       const { data, error } = await supabase
         .from('servers')
         .select('*')
+        .in('id', serverIds)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
@@ -154,7 +170,7 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
 
   return (
     <>
-      <div className="w-18 bg-sidebar flex flex-col items-center py-3 space-y-2 border-r border-sidebar-border">
+      <div className="w-16 md:w-18 bg-sidebar flex flex-col items-center py-3 space-y-2 border-r border-sidebar-border">
         <ScrollArea className="flex-1 w-full">
           <div className="flex flex-col items-center space-y-2 px-2">
             {/* DM Button */}

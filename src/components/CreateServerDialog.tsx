@@ -38,10 +38,13 @@ export default function CreateServerDialog({ open, onOpenChange, userId, onServe
 
       // Upload icon if provided
       if (iconFile) {
-        const fileName = `server-icons/${userId}-${Date.now()}`;
+        const fileName = `server-icons/${userId}-${Date.now()}.${iconFile.name.split('.').pop()}`;
         const { data, error: uploadError } = await supabase.storage
           .from("avatars")
-          .upload(fileName, iconFile);
+          .upload(fileName, iconFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
 
         if (uploadError) throw uploadError;
 
