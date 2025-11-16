@@ -196,7 +196,6 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
             <button
               onClick={() => {
                 setShowDMs(true);
-                onSelectServer('');
               }}
               className={`group relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all hover:rounded-xl ${
                 showDMs
