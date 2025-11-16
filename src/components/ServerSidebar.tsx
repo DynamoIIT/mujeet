@@ -170,7 +170,26 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
 
   return (
     <>
-      <div className="w-16 bg-sidebar flex flex-col items-center py-3 space-y-2 border-r border-sidebar-border">
+      {/* DM Interface - Full width on mobile */}
+      {showDMs && !activeDMFriend && (
+        <div className="fixed md:static inset-0 z-50 md:z-auto flex-1 flex flex-col bg-background md:ml-16">
+          <DirectMessages 
+            onOpenDM={(friendId) => setActiveDMFriend(friendId)}
+            onBack={() => setShowDMs(false)}
+          />
+        </div>
+      )}
+      
+      {showDMs && activeDMFriend && (
+        <div className="fixed md:static inset-0 z-50 md:z-auto flex-1 flex flex-col bg-background md:ml-16">
+          <DMChat 
+            friendId={activeDMFriend}
+            onBack={() => setActiveDMFriend(null)}
+          />
+        </div>
+      )}
+
+      <div className={`w-16 bg-sidebar flex flex-col items-center py-3 space-y-2 border-r border-sidebar-border ${showDMs ? 'hidden md:flex' : ''}`}>
         <ScrollArea className="flex-1 w-full">
           <div className="flex flex-col items-center space-y-2 px-2">
             {/* DM Button */}
@@ -333,24 +352,6 @@ export default function ServerSidebar({ userId, selectedServerId, onSelectServer
             fetchServers();
           }}
         />
-      )}
-
-      {/* DM Interface */}
-      {showDMs && !activeDMFriend && (
-        <div className="flex-1 flex flex-col bg-background">
-          <DirectMessages 
-            onOpenDM={(friendId) => setActiveDMFriend(friendId)}
-          />
-        </div>
-      )}
-      
-      {showDMs && activeDMFriend && (
-        <div className="flex-1 flex flex-col bg-background">
-          <DMChat 
-            friendId={activeDMFriend}
-            onBack={() => setActiveDMFriend(null)}
-          />
-        </div>
       )}
     </>
   );
