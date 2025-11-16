@@ -110,7 +110,7 @@ export default function ChannelList({ serverId, selectedChannelId, onSelectChann
 
   return (
     <>
-      <div className="w-full md:w-60 bg-card flex flex-col border-r border-border">
+      <div className="w-60 bg-card flex flex-col border-r border-border">
         <div className="h-12 px-4 flex items-center border-b border-border shadow-sm">
           {onBack && (
             <Button
